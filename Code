@@ -1,0 +1,83 @@
+# Importing modules
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+df=pd.read_csv('googleplaystore.csv') #Loading data
+df.head() #Inspecting first 5 entries
+df.shape #No of rows and columns
+df.describe() #Summary Statistics
+df.boxplot()
+df.hist()
+df.info()
+Data Cleaning 
+#Count the number of missing values in the dataframe
+df.isnull()
+#Count the number of missing values in each column
+df.isnull().sum()
+#Checking if any of the ratings is more than 5
+df[df.Rating>5]
+df.drop([10472],inplace=True)
+df[10470:10475]
+df.boxplot()
+df.hist()
+#Remove columns that are 90% empty
+threshold=len(df)*0.1
+threshold
+df.dropna(thresh=threshold,axis=1,inplace=True)
+print(df.isnull().sum())
+df.shape
+#Data imputation and manipulation
+#Fill the null values with appropriate values using aggregate functions such as mean,median or mode
+def impute_median(series):
+    return series.fillna(series.median())
+df.Rating=df['Rating'].transform(impute_median)
+df.isnull().sum()
+#modes for Current Ver, Android Ver and Type
+print(df['Type'].mode())
+print(df['Current Ver'].mode())
+print(df['Android Ver'].mode())
+#fill the missing categorical values with mode
+df['Type'].fillna(str(df['Type'].mode().values[0]),inplace=True)
+df['Current Ver'].fillna(str(df['Current Ver'].mode().values[0]),inplace=True)
+df['Android Ver'].fillna(str(df['Android Ver'].mode().values[0]),inplace=True)
+df.isnull().sum()
+#Convert Price,Reviews and Ratings into numerical values
+df['Price']=df['Price'].apply(lambda x: str(x).replace('$','')if '$' in str(x) else str(x))
+df['Price']=df['Price'].apply(lambda x: float(x))
+df['Reviews']=pd.to_numeric(df['Reviews'],errors='coerce')
+df['Installs']=df['Installs'].apply(lambda x: str(x).replace('+','')if '+' in str(x) else str(x))
+df['Installs']=df['Installs'].apply(lambda x: str(x).replace(',','')if ',' in str(x) else str(x))
+df['Installs']=df['Installs'].apply(lambda x: float(x))
+df.head(10)
+df.describe() #Summary Stats After Cleaning
+#Data Visualization
+grp=df.groupby('Category')
+x=grp['Rating'].agg(np.mean)
+y=grp['Reviews'].agg(np.mean)
+z=grp['Price'].agg(np.sum)
+print(x)
+print(y)
+print(z)
+plt.figure(figsize=(12,5))
+plt.plot(x,'ro')
+plt.xticks(rotation=90)
+plt.title('Category v/s Rating')
+plt.xlabel('Categories-->')
+plt.ylabel('Rating-->')
+plt.show()
+plt.figure(figsize=(16,5))
+plt.plot(y,'r--',color='g')
+plt.xticks(rotation=90)
+plt.title('Category v/s Reviews')
+plt.xlabel('Categories-->')
+plt.ylabel('Reviews-->')
+plt.show()
+plt.figure(figsize=(12,5))
+plt.plot(z,'bs',color='b')
+plt.xticks(rotation=90)
+plt.title('Category v/s Prices')
+plt.xlabel('Categories-->')
+plt.ylabel('Prices-->')
+plt.show()
